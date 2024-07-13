@@ -3,12 +3,9 @@
   "version": "1.0.0",
   "description": "This is a role and permission package",
   "main": "./src/index.js",
-  "bin": {
-    "prepare-db": "./utils/prepareDBConfig.js"
-  },
   "scripts": {
-    "prepare-db": "node utils/prepareDBConfig.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "npm i lodash -f"
   },
   "author": "Nitesh Dobariya",
   "license": "ISC",
