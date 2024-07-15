@@ -1,11 +1,12 @@
 {
-  "name": "role-permissions-nod",
+  "name": "role-permissions-node",
   "version": "1.0.0",
   "description": "This is a role and permission package",
   "main": "./src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "npm i lodash -f"
+    "postinstall": "npm i lodash -f",
+    "build": "babel src --out-dir dist"
   },
   "author": "Nitesh Dobariya",
   "license": "ISC",
@@ -19,6 +20,10 @@
     "pg": "^8.12.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10"
+    "@babel/cli": "^7.24.8",
+    "@babel/core": "^7.24.8",
+    "@babel/preset-env": "^7.24.8",
+    "@types/node": "^20.14.10",
+    "webpack-cli": "^5.1.4"
   }
 }

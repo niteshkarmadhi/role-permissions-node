@@ -16,6 +16,8 @@ module.exports = class InitializeDB {
 
     connection = null;
 
+    configManager = new ConfigManager();
+
     constructor() {
         this.dbConfig = {
             db_name: process.env.DB_NAME || "",
@@ -113,42 +115,36 @@ module.exports = class InitializeDB {
     }
 
     createDefaultDBTables(dbType) {
-        return new Promise((__resolve, __reject) => {
-            fs.readdir(path.join(__dirname, '..', 'dbFiles', dbType), 'utf8', async (err, files) => {
-                if (err) {
-                    console.error('Error reading folder:', err);
-                    return;
-                }
-    
-                let promesses = [];
-                files.forEach(file => {
-                    const tableDefinations = fs.readFileSync(path.join(__dirname, '..', 'dbFiles', dbType, file), 'utf8');
-    
-                    promesses.push(
-                        new Promise((resolve, reject) => {
-                            this.connection.query(tableDefinations, (err, result) => {
-                                if (err) {
-                                    reject(err);
-                                } else {
-                                    resolve(result);
-                                }
-                            })
+        return new Promise(async (__resolve, __reject) => {
+            let promesses = [];
+
+            let _tableDefinations = this.configManager.tableDefinations();
+
+            _tableDefinations[dbType].forEach(tbDefiScript => {
+                promesses.push(
+                    new Promise((resolve, reject) => {
+                        this.connection.query(tbDefiScript, (err, result) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(result);
+                            }
                         })
-                    )
-                });
-
-                try {
-                    await Promise.all(promesses);
-                    const configManager = new ConfigManager();
-                    configManager.setConfig({
-                        is_permission_tables_migrated: true,
                     })
-
-                    __resolve(true)
-                } catch (error) {
-                    __reject("Default tables creation error " + error.message);
-                }
+                )
             });
+
+            try {
+                await Promise.all(promesses);
+                
+                this.configManager.setConfig({
+                    is_permission_tables_migrated: true,
+                })
+
+                __resolve(true)
+            } catch (error) {
+                __reject("Default tables creation error " + error.message);
+            }
         });
     }
 }
