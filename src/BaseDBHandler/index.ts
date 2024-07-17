@@ -1,12 +1,12 @@
-const MySqlHandler = require("./MysqlHandler");
-const PostgresHandler = require("./PostgresHandler");
+import MySqlHandler from "./MySqlHandler";
+import PostgresHandler from "./PostgresHandler";
 
-module.exports = class BaseDBHandler {
-    connection = null;
-    dBDialect = null;
-    dbHandler = null;
+export default class BaseDBHandler {
+    protected connection: any;
+    protected dBDialect: string | null;
+    private dbHandler: any;
 
-    constructor(_connection, _dBDialect) {
+    constructor(_connection: any, _dBDialect: string) {
         this.connection = _connection;
         this.dBDialect = _dBDialect;
 
@@ -16,7 +16,7 @@ module.exports = class BaseDBHandler {
                 break;
 
             case 'postgres':
-                this.dbHandler = new PostgresHandler(_connection)
+                this.dbHandler = new PostgresHandler(_connection);
                 break;
 
             default:
@@ -24,39 +24,39 @@ module.exports = class BaseDBHandler {
         }
     }
 
-    __insert(table, values) {
+    protected async __insert(table: string, values: any[] | object) {
         if (Array.isArray(values)) {
             let multiInsertQuery = values.map(fields => {
-                return this.dbHandler.insert(table, fields)
-            })
+                return this.dbHandler.insert(table, fields);
+            });
 
-            return Promise.all(multiInsertQuery)
+            return Promise.all(multiInsertQuery);
         } else {
             return this.dbHandler.insert(table, values);
         }
     }
 
-    __update(table, obj, condition = null) {
+    protected __update(table: string, obj: object, condition: any = null) {
         return this.dbHandler.update(table, obj, condition);
     }
-    
-    __delete(table, condition = null) {
+
+    protected __delete(table: string, condition: any = null) {
         return this.dbHandler.delete(table, condition);
     }
 
-    __select(query) {
+    protected __select(query: string) {
         return this.dbHandler.select(query);
     }
 
-    __findOne(query) {
+    protected __findOne(query: string) {
         return this.dbHandler.findOne(query);
     }
 
-    makeValueToArray(...arg) {
-        let results = [];
+    protected makeValueToArray(...arg: any[]) {
+        let results: any[] = [];
         arg.forEach(element => {
-            let _result = [];
-            if (! Array.isArray(element)) {
+            let _result: any[] = [];
+            if (!Array.isArray(element)) {
                 _result = [element];
             } else {
                 _result = element;
@@ -72,33 +72,33 @@ module.exports = class BaseDBHandler {
         return results;
     }
 
-    prepareForWhereIn(...arg) {
-        let results = [];
+    protected prepareForWhereIn(...arg: any[]) {
+        let results: any = [];
         arg.forEach(elementArr => {
             if (arg.length > 1) {
                 results.push(
-                    `(${elementArr.map(e => `'${e}'`)})`
+                    `(${elementArr.map((e: any) => `'${e}'`).join(',')})`
                 );
             } else {
-                results = `(${elementArr.map(e => `'${e}'`)})`
+                results = `(${elementArr.map((e: any) => `'${e}'`).join(',')})`;
             }
         });
 
         return results;
     }
 
-    async getIdBySlugs(table, arrIdOrSlugs, isSingleId = false) {
+    protected async getIdBySlugs(table: string, arrIdOrSlugs: any[], isSingleId: boolean = false) {
         arrIdOrSlugs = this.makeValueToArray(arrIdOrSlugs);
 
         if (arrIdOrSlugs.length > 0) {
             let slugs = arrIdOrSlugs.filter(slug => isNaN(Number(slug)));
 
             if (slugs.length > 0 && slugs.length != arrIdOrSlugs.length) {
-                throw new Error('invalid slugs! all value should be slugs');
-            } else if(slugs.length > 0) {
+                throw new Error('invalid slugs! all values should be slugs');
+            } else if (slugs.length > 0) {
                 let _slugWhereIn = this.prepareForWhereIn(slugs);
                 arrIdOrSlugs = (await this.__select(`select id from ${table} where slug in ${_slugWhereIn}`))
-                    .map(e => e.id)
+                    .map((e: any) => e.id);
             }
         }
 
