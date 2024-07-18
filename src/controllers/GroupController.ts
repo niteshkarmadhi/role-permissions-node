@@ -8,10 +8,6 @@ export default class GroupController extends BaseDBHandler {
         this.groupId = _groupId;
     }
 
-    public myAllRoles() {
-        return ['lol'];
-    }
-
     create(obj: any): Promise<any> {
         return this.__insert('groups', obj);
     }
